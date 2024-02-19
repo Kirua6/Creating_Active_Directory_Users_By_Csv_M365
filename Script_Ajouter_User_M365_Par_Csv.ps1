@@ -1,4 +1,4 @@
-﻿# 1) Faire son export CSV depuis M365 en ayant filtrer le type d'user voulut
+﻿# 1) Faire son export CSV depuis M365 en ayant filtré le type d'user voulut
 # 2) Avoir un csv bien délimité: ouvrir excel -> ouvrir csv -> Délimité -> Cocher seulement Virgule -> Standart -> Terminer
 # 3) Penser à modifier @... ,Ligne 120, de votre UserPrincipalName par le votre, actuellement: "$samAccountName@groupe-test.com"
 # 4) Penser à modifier @... ,Ligne 125, de votre EmailAddress par le votre, actuellement: "$samAccountName@groupe-test.com"
