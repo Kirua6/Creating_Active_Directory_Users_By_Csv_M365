@@ -2,6 +2,7 @@
 # 2) Avoir un csv bien délimité: ouvrir excel -> ouvrir csv -> Délimité -> Cocher seulement Virgule -> Standart -> Terminer
 # 3) Penser à modifier @... ,Ligne 120, de votre UserPrincipalName par le votre, actuellement: "$samAccountName@groupe-test.com"
 # 4) Penser à modifier @... ,Ligne 125, de votre EmailAddress par le votre, actuellement: "$samAccountName@groupe-test.com"
+# 5) Penser à mettre un MDP en accord avec vos GPO
 
 # Charger le module Active Directory si pas déjà chargé
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
