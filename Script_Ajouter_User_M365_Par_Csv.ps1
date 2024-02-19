@@ -106,7 +106,7 @@ if ($selectedOU -eq $null -or $password -eq "") {
 }
 
 foreach ($user in $users) {
-    # Ajout prénom en minuscule, nom en maj et build SamAccountName en min
+    # Ajout prénom en minuscule, nom en maj et build SamAccountName en min, le tout en enlevant les espaces
     $formattedGivenName = $user.Prénom.Replace(" ", "").ToLower()
     $formattedSurname = $user.Nom.Replace(" ", "").ToUpper()
     $samAccountName = ("{0}.{1}" -f $formattedGivenName, $user.Nom.Replace(" ", "").ToLower())
