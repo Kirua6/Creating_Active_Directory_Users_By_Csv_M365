@@ -31,4 +31,4 @@ Vous devez éditer le script pour inclure votre UserPrincipalName et EmailAddres
 
 ## Avertissement
 
-Ce script est fourni "tel quel", sans garantie d'aucune sorte de réussit. Utilisez-le avec précaution.
+Ce script est fourni "tel quel", sans garantie d'aucune sorte de réussite. Utilisez-le avec précaution.
