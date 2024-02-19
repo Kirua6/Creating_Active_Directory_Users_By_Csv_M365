@@ -1,0 +1,39 @@
+# Forcer une synchronisation --> A FAIRE SUR PC ADMIN
+Start-ADSyncSyncCycle
+
+# Stopper les services AD Connect --> A FAIRE SUR PC ADMIN
+Set-ADSyncScheduler -SyncCycleEnabled $false
+
+# Obtenir des informations sur le compte --> A FAIRE SUR PC ADMIN
+Get-ADUser -identity <samaccountname>
+
+# Si l'on a pas encore le module d'installer --> A FAIRE SUR SON PC EN EXECUTANT ISE EN ADMIN
+Install-Module MSOnline
+
+# Lier les comptes grâce au GUID et àl’UPN --> A FAIRE SUR SON PC EN EXECUTANT ISE EN ADMIN
+$guid = [guid]'votre_GUID_entre_quote'
+$user = 'votre_UPN_entre_quote'
+$bytearray = $guid.tobytearray()
+$immutableid = [system.convert]::ToBase64String($bytearray)
+Connect-MsolService
+# ImmutableId avant modification
+Get-MsolUser -UserPrincipalName $user | Select UserPrincipalName, ImmutableId
+Set-MsolUser -UserPrincipalName $user -ImmutableId $immutableID
+# ImmutableId après modification
+Get-MsolUser -UserPrincipalName $user | Select UserPrincipalName, ImmutableId
+
+# relancer les services AD Connect + Forcer une synchronisation --> A FAIRE SUR PC ADMIN
+Set-ADSyncScheduler -SyncCycleEnabled $true
+Start-ADSyncSyncCycle
+
+#####################################
+#  .-. .-')       (`-.   _  .-')    #
+#  \  ( OO )    _(OO  )_( \( -O )   #
+#  ,--. ,--.,--(_/   ,. \,------.   #
+#  |  .'   /\   \   /(__/|   /`. '  #
+#  |      /, \   \ /   / |  /  | |  #
+#  |     ' _) \   '   /, |  |_.' |  #
+#  |  .   \    \     /__)|  .  '.'  #
+#  |  |\   \    \   /    |  |\  \   #
+#  `--' '--'     `-'     `--' '--'  #
+#####################################
