@@ -18,8 +18,10 @@ En cas de problèmes de synchronisation de compte, j'ai aussi créé [un tutorie
 
 1. Exportez le type d'utilisateur souhaité depuis Microsoft 365 vers un fichier CSV.
 2. Assurez-vous que le CSV est bien formaté : ouvrez Excel -> ouvrez le CSV -> choisissez 'Délimité' -> cochez uniquement 'Virgule' -> choisissez 'Standard' -> terminez.
-3. Modifiez le UserPrincipalName et l'EmailAddress aux lignes 120 et 125, respectivement, pour correspondre à votre domaine (actuellement réglé sur "@groupe-test.com").
-4. Exécutez le script dans PowerShell, sélectionnez votre fichier CSV, et suivez les invites de l'interface graphique.
+3. Je vous conseille personnellement de supprimer le contenu de la colonne "Adresses proxy" dans votre CSV export M365 pour ne pas avoir de problèmes de synchro smtp
+4. Modifiez le UserPrincipalName et l'EmailAddress aux lignes 120 et 125, respectivement, pour correspondre à votre domaine (actuellement réglé sur "@groupe-test.com").
+5. Exécutez le script dans PowerShell, sélectionnez votre fichier CSV, et suivez les invites de l'interface graphique.
+6. Pensez à utiliser un mot de passe conforme aux autres règles de GPO appliqués
 
 ## Personnalisation
 
