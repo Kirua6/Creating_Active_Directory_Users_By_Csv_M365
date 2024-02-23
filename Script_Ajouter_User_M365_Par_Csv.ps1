@@ -1,8 +1,9 @@
-﻿# 1) Faire son export CSV depuis M365 en ayant filtré le type d'user voulut
+# 1) Faire son export CSV depuis M365 en ayant filtrer le type d'user voulut
 # 2) Avoir un csv bien délimité: ouvrir excel -> ouvrir csv -> Délimité -> Cocher seulement Virgule -> Standart -> Terminer
-# 3) Penser à modifier @... ,Ligne 120, de votre UserPrincipalName par le votre, actuellement: "$samAccountName@groupe-test.com"
-# 4) Penser à modifier @... ,Ligne 125, de votre EmailAddress par le votre, actuellement: "$samAccountName@groupe-test.com"
-# 5) Penser à mettre un MDP en accord avec vos GPO
+# 3) Je vous conseille personnellement de supprimer le contenu de la colonne "Adresses proxy" dans votre CSV export M365 pour ne pas avoir de problèmes de synchro smtp
+# 4) Penser à modifier @... ,Ligne 120, de votre UserPrincipalName par le votre, actuellement: "$samAccountName@groupe-test.com"
+# 5) Penser à modifier @... ,Ligne 125, de votre EmailAddress par le votre, actuellement: "$samAccountName@groupe-test.com"
+# 6) Penser à mettre un MDP en accord avec vos GPO
 
 # Charger le module Active Directory si pas déjà chargé
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
@@ -107,10 +108,10 @@ if ($selectedOU -eq $null -or $password -eq "") {
 }
 
 foreach ($user in $users) {
-    # Ajout prénom en minuscule, nom en maj et build SamAccountName en min, le tout en enlevant les espaces
-    $formattedGivenName = $user.Prénom.Replace(" ", "").ToLower()
+    # # Ajout prénom, première lettre en maj, reste en minuscule, nom en maj et build SamAccountName en min avec max char = 20
+    $formattedGivenName = ($user.Prénom.Substring(0,1).ToUpper() + $user.Prénom.Substring(1).ToLower()).Replace(" ", "")
     $formattedSurname = $user.Nom.Replace(" ", "").ToUpper()
-    $samAccountName = ("{0}.{1}" -f $formattedGivenName, $user.Nom.Replace(" ", "").ToLower())
+    $samAccountName = ("{0}.{1}" -f $user.Prénom.Replace(" ", "").ToLower(), $user.Nom.Replace(" ", "").ToLower()).Substring(0,[Math]::Min(20, $user.Prénom.Replace(" ", "").Length + $user.Nom.Replace(" ", "").Length + 1))
 
     # Creation paramètres de base pour chaque user
     $ADUserParams = @{
