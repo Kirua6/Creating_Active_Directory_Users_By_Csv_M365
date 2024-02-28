@@ -10,9 +10,9 @@ En cas de problèmes de synchronisation de compte, j'ai aussi créé [un tutorie
 - Traite un fichier CSV pour créer des utilisateurs dans l'OU spécifiée avec le mot de passe fourni.
 - Permet de définir le SuffixUPN voulu :
   1. Soit en modifiant manuellement dans le script.
-     ° --> Script_Ajouter_User_M365_Par_Csv.ps1.
+     - --> Script_Ajouter_User_M365_Par_Csv.ps1.
   2. Soit en choisissant dans le formulaire avec les SuffixUPN automatiquement récupéré par le script.
-     ° --> Script_Ajouter_User_M365_Par_CSV_V2.ps1.
+     - --> Script_Ajouter_User_M365_Par_CSV_V2.ps1.
 
 ## Prérequis
 
