@@ -126,12 +126,12 @@ function Select-UPNSuffix {
     Add-Type -AssemblyName System.Windows.Forms
     $formUPN = New-Object System.Windows.Forms.Form
     $formUPN.Text = 'Sélection du suffixe UPN'
-    $formUPN.Size = New-Object System.Drawing.Size(320, 200)
+    $formUPN.Size = New-Object System.Drawing.Size(215, 125)
     $formUPN.StartPosition = 'CenterScreen'
 
     $comboBox = New-Object System.Windows.Forms.ComboBox
     $comboBox.Location = New-Object System.Drawing.Point(10, 10)
-    $comboBox.Size = New-Object System.Drawing.Size(290, 20)
+    $comboBox.Size = New-Object System.Drawing.Size(180, 20)
     $comboBox.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 
     $domainUPNSuffix = Get-DomainUPNSuffix
@@ -147,7 +147,7 @@ function Select-UPNSuffix {
     $formUPN.Controls.Add($comboBox)
 
     $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(220, 130)
+    $okButton.Location = New-Object System.Drawing.Point(115, 40)
     $okButton.Size = New-Object System.Drawing.Size(75, 23)
     $okButton.Text = 'OK'
     $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
@@ -183,65 +183,62 @@ if ($selectedUPNSuffix -eq $null) {
     exit
 }
 
-# Vérif UPN valid
-if ($selectedUPNSuffix -match '(\S+)') {
-    $selectedUPNSuffix = $matches[1]
-}
-
-# Vérif si SuffixUPN non null avant accès à l'index
+# Continu script si suffix upn
 if ($selectedUPNSuffix -ne $null) {
-    # Affiche SuffixUPN pour verif
-    Write-Host "Suffixe UPN sélectionné pour la création de l'utilisateur: $selectedUPNSuffix"
-} else {
-    Write-Host "Suffixe UPN non sélectionné, arrêt du script."
-    exit
-}
+    $users = Import-Csv -Path $csvPath -Delimiter ';'
+    foreach ($user in $users) {
+        $formattedGivenName = ($user.Prénom.Substring(0,1).ToUpper() + $user.Prénom.Substring(1).ToLower()).Replace(" ", "")
+        $formattedSurname = $user.Nom.Replace(" ", "").ToUpper()
 
-$users = Import-Csv -Path $csvPath -Delimiter ';'
-foreach ($user in $users) {
-    $formattedGivenName = ($user.Prénom.Substring(0,1).ToUpper() + $user.Prénom.Substring(1).ToLower()).Replace(" ", "")
-    $formattedSurname = $user.Nom.Replace(" ", "").ToUpper()
+        # Utilise fonction suppression accents
+        $cleanGivenName = Remove-Diacritics -text $user.Prénom
+        $cleanSurname = Remove-Diacritics -text $user.Nom
 
-    # Utilise fonction suppression accents
-    $cleanGivenName = Remove-Diacritics -text $user.Prénom
-    $cleanSurname = Remove-Diacritics -text $user.Nom
+       
+        $samAccountName = ("{0}.{1}" -f $cleanGivenName.Replace(" ", "").ToLower(), $cleanSurname.Replace(" ", "").ToLower())
+        if ($samAccountName.Length -gt 20) {
+        $samAccountName = $samAccountName.Substring(0, 20)
+        }
 
-    $samAccountName = ("{0}.{1}" -f $cleanGivenName.Replace(" ", "").ToLower(), $cleanSurname.Replace(" ", "").ToLower()).Substring(0,[Math]::Min(20, $cleanGivenName.Length + $cleanSurname.Length))
-    
-    # Nettoi UPN si necessaire
-    $fullUPN = "$samAccountName@$selectedUPNSuffix"
-    $cleanUPN = $fullUPN -replace '0 1 ', ''  # Enlève '0 1 ' s'il apparaît
+        # Nettoi UPN si necessaire
+        $fullUPN = "$samAccountName@$selectedUPNSuffix"
+        $cleanUPN = $fullUPN -replace '0 1 ', ''  # Enlève '0 1 ' s'il apparaît
 
-    $ADUserParams = @{
-        Enabled               = $true
-        Path                  = $selectedOU
-        AccountPassword       = (ConvertTo-SecureString -AsPlainText $password -Force)
-        PasswordNeverExpires  = $false
-        ChangePasswordAtLogon = $true
-        UserPrincipalName     = $cleanUPN
-        SamAccountName        = $samAccountName
-        Name                  = "$formattedGivenName $formattedSurname"
-        GivenName             = $formattedGivenName
-        Surname               = $formattedSurname
-        DisplayName           = "$formattedGivenName $formattedSurname"
-        EmailAddress          = $cleanUPN
-        City                  = $user.Ville
-        PostalCode            = $user.'Code postal'
-        State                 = $user.État
-        Title                 = $user.Titre
-        Department            = $user.Service
-    }
+        $ADUserParams = @{
+            Enabled               = $true
+            Path                  = $selectedOU
+            AccountPassword       = (ConvertTo-SecureString -AsPlainText $password -Force)
+            PasswordNeverExpires  = $false
+            ChangePasswordAtLogon = $true
+            UserPrincipalName     = $cleanUPN
+            SamAccountName        = $samAccountName
+            Name                  = "$formattedGivenName $formattedSurname"
+            GivenName             = $formattedGivenName
+            Surname               = $formattedSurname
+            DisplayName           = "$formattedGivenName $formattedSurname"
+            EmailAddress          = $cleanUPN
+            City                  = $user.Ville
+            PostalCode            = $user.'Code postal'
+            State                 = $user.État
+            Title                 = $user.Titre
+            Department            = $user.Service
+        }
+
+        try {
+            New-ADUser @ADUserParams -ErrorAction Stop
+            Write-Host "Utilisateur créé : $($ADUserParams['SamAccountName'])" -ForegroundColor Green
+        } catch {
+            Write-Host "Erreur lors de la création de l'utilisateur : $_" -ForegroundColor Red
+        }
+    }  # ferme foreach
 
     try {
-        New-ADUser @ADUserParams -ErrorAction Stop
-        Write-Host "Utilisateur créé : $($ADUserParams['GivenName']) $($ADUserParams['Surname'])" -ForegroundColor Green
+        Start-ADSyncSyncCycle -PolicyType Delta
+        Write-Host "Cycle de synchronisation Delta démarré." -ForegroundColor Green
+    } catch [System.InvalidOperationException] {
+        Write-Host "Un cycle de synchronisation est déjà en cours. Impossible de démarrer un nouveau cycle jusqu'à ce que celui-ci soit terminé." -ForegroundColor Yellow
     } catch {
-        Write-Host "Erreur lors de la création de l'utilisateur : $($ADUserParams['GivenName']) $($ADUserParams['Surname'])" -ForegroundColor Red
-        Write-Host "Détail de l'erreur : $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Une erreur inattendue s'est produite lors du démarrage du cycle de synchronisation Delta : $_" -ForegroundColor Red
     }
-}
-
-# Synchro M365
-Start-ADSyncSyncCycle -PolicyType Delta
-
+}  # ferme if ($selectedUPNSuffix -ne $null)
 Write-Host "Script terminé." -ForegroundColor Yellow
