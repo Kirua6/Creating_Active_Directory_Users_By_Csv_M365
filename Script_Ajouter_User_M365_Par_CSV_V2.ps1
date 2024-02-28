@@ -55,7 +55,7 @@ function Select-ADOUAndPassword {
     Add-Type -AssemblyName System.Windows.Forms
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'Sélection de l''OU et saisie du mot de passe'
-    $form.Size = New-Object System.Drawing.Size(520, 350)
+    $form.Size = New-Object System.Drawing.Size(520, 430)
     $form.StartPosition = 'CenterScreen'
 
 
