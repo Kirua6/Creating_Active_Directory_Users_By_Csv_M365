@@ -1,9 +1,15 @@
+# 1) Faire son export CSV depuis M365 en ayant filtrer le type d'user voulut
+# 2) Avoir un csv bien délimité: ouvrir excel -> ouvrir csv -> Délimité -> Cocher seulement Virgule -> Standart -> Terminer
+# 3) Je vous conseille personnellement de supprimer le contenu de la colonne "Adresses proxy" dans votre CSV export M365 pour ne pas avoir de problèmes de synchro smtp
+# 4) Les SuffixUPN de votre domaine vous seront automatiquement affiché, choisissez le bon
+# 5) Penser à mettre un MDP en accord avec vos GPO
+
 # Charger le module Active Directory si pas déjà chargé
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
     Import-Module ActiveDirectory
 }
 
-# Fonction pour remplacer les caractères accentués
+# remplace accents
 function Remove-Diacritics {
     param (
         [string]$text
@@ -18,19 +24,19 @@ function Remove-Diacritics {
     return $builder.ToString()
 }
 
-# Fonction pour récupérer le suffixe UPN principal du domaine actuel
+# récup suffixUPN principal du domaine
 function Get-DomainUPNSuffix {
     $domain = Get-ADDomain
     return $domain.DNSRoot
 }
 
-# Fonction pour récupérer les suffixes UPN configurés au niveau de la forêt
+# récup suffixUPN configurés en plus
 function Get-ForestUPNSuffixes {
     $forest = Get-ADForest
     return $forest.UPNSuffixes
 }
 
-# Fonction pour sélectionner le fichier CSV
+# Selection CSV
 function Select-CSVFile {
     Add-Type -AssemblyName System.Windows.Forms
     $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
@@ -44,7 +50,7 @@ function Select-CSVFile {
     }
 }
 
-# Fonction pour sélectionner l'OU et saisir le mot de passe
+# Selection OU et MDP
 function Select-ADOUAndPassword {
     Add-Type -AssemblyName System.Windows.Forms
     $form = New-Object System.Windows.Forms.Form
@@ -115,7 +121,7 @@ function Select-ADOUAndPassword {
     }
 }
 
-# Fonction pour sélectionner le suffixe UPN
+# Selection SuffixUPN
 function Select-UPNSuffix {
     Add-Type -AssemblyName System.Windows.Forms
     $formUPN = New-Object System.Windows.Forms.Form
@@ -156,7 +162,8 @@ function Select-UPNSuffix {
         return $null
     }
 }
-# Début du script principal
+
+# Debut script princip
 
 $csvPath = Select-CSVFile
 if ($csvPath -eq $null) {
@@ -176,14 +183,14 @@ if ($selectedUPNSuffix -eq $null) {
     exit
 }
 
-# Assurez-vous que le suffixe UPN est correct
+# Vérif UPN valid
 if ($selectedUPNSuffix -match '(\S+)') {
     $selectedUPNSuffix = $matches[1]
 }
 
-# Vérifiez si le suffixe UPN n'est pas null avant d'accéder à l'index
+# Vérif si SuffixUPN non null avant accès à l'index
 if ($selectedUPNSuffix -ne $null) {
-    # Affichez le suffixe UPN pour la vérification
+    # Affiche SuffixUPN pour verif
     Write-Host "Suffixe UPN sélectionné pour la création de l'utilisateur: $selectedUPNSuffix"
 } else {
     Write-Host "Suffixe UPN non sélectionné, arrêt du script."
@@ -195,13 +202,13 @@ foreach ($user in $users) {
     $formattedGivenName = ($user.Prénom.Substring(0,1).ToUpper() + $user.Prénom.Substring(1).ToLower()).Replace(" ", "")
     $formattedSurname = $user.Nom.Replace(" ", "").ToUpper()
 
-    # Utiliser la fonction pour supprimer les accents
+    # Utilise fonction suppression accents
     $cleanGivenName = Remove-Diacritics -text $user.Prénom
     $cleanSurname = Remove-Diacritics -text $user.Nom
 
     $samAccountName = ("{0}.{1}" -f $cleanGivenName.Replace(" ", "").ToLower(), $cleanSurname.Replace(" ", "").ToLower()).Substring(0,[Math]::Min(20, $cleanGivenName.Length + $cleanSurname.Length))
     
-    # Nettoyez le UPN si nécessaire
+    # Nettoi UPN si necessaire
     $fullUPN = "$samAccountName@$selectedUPNSuffix"
     $cleanUPN = $fullUPN -replace '0 1 ', ''  # Enlève '0 1 ' s'il apparaît
 
@@ -234,8 +241,7 @@ foreach ($user in $users) {
     }
 }
 
-
-# Optionnel : Déclenchez une synchronisation avec Microsoft 365 si nécessaire
-# Start-ADSyncSyncCycle -PolicyType Delta
+# Synchro M365
+Start-ADSyncSyncCycle -PolicyType Delta
 
 Write-Host "Script terminé." -ForegroundColor Yellow
