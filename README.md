@@ -1,5 +1,7 @@
 # Script de Création d'Utilisateurs Active Directory
 
+- Conseil, je vous conseille d'utiliser Script_Ajouter_User_M365_Par_CSV_V2.ps1, il est plus complet et mis à jour.
+
 Ce script PowerShell facilite la création en masse de comptes utilisateurs dans Active Directory à partir d'un fichier CSV, notamment à partir d'un export M365.
 Une fiche [tutoriel](https://github.com/Kirua6/Creating_Active_Directory_Users_By_Csv_M365/blob/main/Fiche_Migration_Donn%C3%A9es_Compte_AD_Profil_Wizard_Git.pdf) est présente pour faire suite à l'utilisation du script, elle permet la migration des applis/ documents de votre ancien compte vers le nouveau avec Profile Wizard.
 En cas de problèmes de synchronisation de compte, j'ai aussi créé [un tutoriel](https://github.com/Kirua6/Creating_Active_Directory_Users_By_Csv_M365/blob/main/Fiche_R%C3%A9solution_Doublon_Compte_AD_%26_M365_Git.pdf) pour résoudre ça.
